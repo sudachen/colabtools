@@ -53,6 +53,26 @@ def _read_next_input_message():
   return reply.get('content', {}).get('value', '')
 
 
+def _read_stdin_message():
+  """Reads a stdin message.
+
+  This discards any colab messaging replies that may arrive on the stdin_socket.
+
+  Returns:
+    The input message or None if input is not available.
+  """
+  while True:
+    value = _read_next_input_message()
+    if value == _NOT_READY:
+      return None
+
+    # Skip any colab responses.
+    if isinstance(value, dict) and value.get('type') == 'colab_reply':
+      continue
+
+    return value
+
+
 def read_reply_from_input(message_id, timeout_sec=None):
   """Reads a reply to the message from the stdin channel.
 
@@ -94,7 +114,7 @@ _msg_id = 0
 
 
 def send_request(request_type, request_body, parent=None):
-  """Sends the given message to the frontend."""
+  """Sends the given message to the frontend without waiting for a reply."""
 
   instance = ipython.get_kernelapp()
   global _msg_id

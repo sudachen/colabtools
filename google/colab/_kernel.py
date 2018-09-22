@@ -14,14 +14,20 @@
 """Colab-specific kernel customizations."""
 
 from ipykernel import ipkernel
-
 from ipykernel.jsonutil import json_clean
 from IPython.utils.tokenutil import token_at_cursor
+from google.colab import _autocomplete
 from google.colab import _shell
+from google.colab import _shell_customizations
 
 
 class Kernel(ipkernel.IPythonKernel):
   """Kernel with additional Colab-specific features."""
+
+  def __init__(self, *args, **kwargs):
+    super(Kernel, self).__init__(*args, **kwargs)
+
+    _autocomplete.enable()
 
   def _shell_class_default(self):
     return _shell.Shell
@@ -70,11 +76,9 @@ class Kernel(ipkernel.IPythonKernel):
     if parent.get('metadata', {}).get('colab_options',
                                       {}).get('include_colab_metadata'):
       matches['metadata'] = {
-          # Filter to only what is needed since there can be a lot of
-          # completions to send.
-          'colab_types_experimental': [{
-              'type_name': self.shell.object_inspect(match)['type_name']
-          } for match in matches['matches']],
+          'colab_types_experimental':
+              _shell_customizations.compute_completion_metadata(
+                  self.shell, matches['matches']),
       }
     matches = json_clean(matches)
 

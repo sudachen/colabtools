@@ -5,7 +5,6 @@ language: python
 sudo: false
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
   - "3.7-dev"
@@ -13,6 +12,10 @@ python:
 matrix:
   allow_failures:
     - python: "3.7-dev"
+
+notifications:
+  recipients:
+    - colaboratory-team+travis-ci@google.com
 
 install: pip install tox-travis
 script: tox
